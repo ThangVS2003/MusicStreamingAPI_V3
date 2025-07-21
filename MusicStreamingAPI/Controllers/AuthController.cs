@@ -33,14 +33,21 @@ namespace MusicStreamingAPI.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == request.Username || u.Email == request.Username);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == request.Username);
+
             if (user == null)
-                return Unauthorized(new { message = "Invalid credentials" });
+                return Unauthorized(new { message = "Username not found" });
+
+            if (user.PasswordHash != request.Password)
+                return Unauthorized(new { message = "Incorrect password" });
+
             if (user.IsActive == false)
                 return Unauthorized(new { message = "User is banned or inactive" });
+
             var token = GenerateJwtToken(user);
             return Ok(new { token, userId = user.UserId, roles = user.IsAdmin == true ? new[] { "Admin" } : new[] { "User" } });
         }
+
 
         /// <summary>
         /// Register a new user
