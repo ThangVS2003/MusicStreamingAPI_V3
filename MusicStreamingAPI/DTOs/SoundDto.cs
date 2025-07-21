@@ -19,6 +19,7 @@ namespace MusicStreamingAPI.DTOs
         public bool? IsPublic { get; set; }
         public bool? IsActive { get; set; }
         public int? UploadedBy { get; set; }
+        public string? UploaderName { get; set; }
         public DateTime? CreatedAt { get; set; }
         public SoundDto(Sound s)
         {
@@ -37,6 +38,7 @@ namespace MusicStreamingAPI.DTOs
             IsActive = s.IsActive;
             UploadedBy = s.UploadedBy;
             CreatedAt = s.CreatedAt;
+            UploaderName = UploaderName;
         }
     }
 }

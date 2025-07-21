@@ -21,13 +21,7 @@ namespace MusicStreamingAPI.Controllers
         /// <summary>
         /// Get full track info by ID
         /// </summary>
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetTrack(int id)
-        {
-            var sound = await _context.Sounds.Include(s => s.Album).Include(s => s.Category).FirstOrDefaultAsync(s => s.SoundId == id);
-            if (sound == null) return NotFound();
-            return Ok(new SoundDto(sound));
-        }
+
 
         /// <summary>
         /// Increase play count when played
