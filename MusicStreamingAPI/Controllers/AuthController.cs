@@ -6,7 +6,6 @@ using MusicStreamingAPI.Models;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using MusicStreamingAPI.DTOs;
@@ -36,17 +35,6 @@ namespace MusicStreamingAPI.Controllers
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == request.Username);
 
             if (user == null)
-
-                return Unauthorized(new { message = "Invalid credentials" });
-
-            if (!(user.IsActive ?? false))
-                return Unauthorized(new { message = "User is banned or inactive" });
-
-            // So sánh mật khẩu đã nhập (request.Password) với mật khẩu đã lưu (user.PasswordHash)
-            if (!VerifyPassword(request.Password, user.PasswordHash))
-                return Unauthorized(new { message = "Invalid credentials" });
-
-
                 return Unauthorized(new { message = "Username not found" });
 
             if (user.PasswordHash != request.Password)
@@ -55,7 +43,6 @@ namespace MusicStreamingAPI.Controllers
             if (user.IsActive == false)
                 return Unauthorized(new { message = "User is banned or inactive" });
 
- 
             var token = GenerateJwtToken(user);
             return Ok(new
             {
@@ -64,7 +51,6 @@ namespace MusicStreamingAPI.Controllers
                 roles = (user.IsAdmin ?? false) ? new[] { "Admin" } : new[] { "User" }
             });
         }
-
 
         /// <summary>
         /// Register a new user
@@ -78,13 +64,11 @@ namespace MusicStreamingAPI.Controllers
             if (await _context.Users.AnyAsync(u => u.Email == request.Email))
                 return BadRequest(new { message = "Email already exists" });
 
-            var hashedPassword = HashPassword(request.Password);
-
             var user = new User
             {
                 Username = request.Username,
                 Email = request.Email,
-                PasswordHash = hashedPassword,
+                PasswordHash = request.Password, // No hash
                 FirstName = request.FirstName,
                 LastName = request.LastName,
                 CreatedAt = DateTime.UtcNow,
@@ -104,14 +88,13 @@ namespace MusicStreamingAPI.Controllers
             });
         }
 
-        // Helper: Generate JWT token
         private string GenerateJwtToken(User user)
         {
             var claims = new[]
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.UserId.ToString()),
                 new Claim(JwtRegisteredClaimNames.UniqueName, user.Username),
-new Claim(ClaimTypes.Role, (user.IsAdmin ?? false) ? "Admin" : "User")
+                new Claim(ClaimTypes.Role, (user.IsAdmin ?? false) ? "Admin" : "User")
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"] ?? "supersecretkey"));
@@ -127,23 +110,6 @@ new Claim(ClaimTypes.Role, (user.IsAdmin ?? false) ? "Admin" : "User")
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
-
-        // Helper: Hash password (simple SHA256)
-        private string HashPassword(string password)
-        {
-            using var sha256 = SHA256.Create();
-            var bytes = Encoding.UTF8.GetBytes(password);
-            var hash = sha256.ComputeHash(bytes);
-            return Convert.ToBase64String(hash);
-        }
-
-        // Helper: Verify password
-        private bool VerifyPassword(string inputPassword, string storedHash)
-        {
-            // Bỏ hash để so sánh trực tiếp
-            return inputPassword == storedHash;
-        }
-
 
         /// <summary>
         /// Google login redirection
