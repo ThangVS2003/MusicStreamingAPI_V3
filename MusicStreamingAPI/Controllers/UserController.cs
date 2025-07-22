@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace MusicStreamingAPI.Controllers
 {
@@ -57,7 +58,58 @@ namespace MusicStreamingAPI.Controllers
             await _context.SaveChangesAsync();
             return Ok(new UserProfileDto(user));
         }
+        [HttpPost("change-password")]
+        public async Task<ActionResult<ChangePasswordResponseDto>> ChangePassword(ChangePasswordRequestDto request)
+        {
+            // Lấy UserId từ JWT token
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdClaim, out int userId))
+            {
+                return Unauthorized(new
+                {
+                    Message = "Không thể xác thực người dùng",
+                    Claims = User.Claims.Select(c => new { c.Type, c.Value })
+                });
+            }
 
+            // Kiểm tra người dùng tồn tại
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null)
+            {
+                return NotFound(new { Message = $"Người dùng với ID {userId} không tồn tại" });
+            }
+
+            // Kiểm tra mật khẩu cũ
+            if (request.OldPassword != user.PasswordHash)
+            {
+                return BadRequest(new { Message = "Mật khẩu cũ không đúng" });
+            }
+
+            // Kiểm tra mật khẩu mới và xác nhận mật khẩu
+            if (string.IsNullOrWhiteSpace(request.NewPassword) || request.NewPassword.Length < 6)
+            {
+                return BadRequest(new { Message = "Mật khẩu mới phải có ít nhất 6 ký tự" });
+            }
+
+            if (request.NewPassword != request.ConfirmPassword)
+            {
+                return BadRequest(new { Message = "Mật khẩu xác nhận không khớp" });
+            }
+
+            // Cập nhật mật khẩu mới (lưu dạng văn bản thuần)
+            user.PasswordHash = request.NewPassword;
+            user.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            var response = new ChangePasswordResponseDto
+            {
+                UserId = user.UserId,
+                Message = "Đổi mật khẩu thành công"
+            };
+
+            return Ok(response);
+        }
         /// <summary>
         /// Upload avatar (protected)
         /// </summary>
