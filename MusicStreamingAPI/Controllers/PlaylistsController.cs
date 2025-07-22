@@ -276,5 +276,41 @@ namespace MusicStreamingAPI.Controllers
                 return StatusCode(500, new { Message = "Đã xảy ra lỗi khi lấy danh sách playlist.", Error = ex.Message });
             }
         }
+        // GET: api/playlists/{playlistId}/tracks
+        [HttpGet("{playlistId}/tracks")]
+        public async Task<IActionResult> GetSoundsByPlaylist(int playlistId)
+        {
+            try
+            {
+                // Kiểm tra playlist có tồn tại không
+                var playlist = await _context.Playlists.FindAsync(playlistId);
+                if (playlist == null)
+                {
+                    return NotFound(new { Message = "Playlist không tồn tại." });
+                }
+
+                // Lấy danh sách bài nhạc thuộc playlist
+                var tracks = await _context.PlaylistTracks
+                    .Where(pt => pt.PlaylistId == playlistId)
+                    .Join(_context.Sounds,
+                          pt => pt.SoundId,
+                          s => s.SoundId,
+                          (pt, s) => new TrackInPlaylistResponse
+                          {
+                              SoundId=s.SoundId,
+                              Title = s.Title,
+                              ArtistName = s.ArtistName,
+                              CoverImageUrl= s.CoverImageUrl // hoặc s.Description nếu có
+                          })
+                    .ToListAsync();
+
+                return Ok(tracks);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "Đã xảy ra lỗi khi lấy danh sách bài nhạc.", Error = ex.Message });
+            }
+        }
+
     }
 }
