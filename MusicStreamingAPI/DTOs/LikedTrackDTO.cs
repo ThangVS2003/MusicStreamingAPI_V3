@@ -2,13 +2,12 @@
 {
     public class LikedTrackDTO
     {
-
         public int UserId { get; set; }
+        public SoundDTO Sound { get; set; }
+    }
 
+    public class SoundDTO
+    {
         public int SoundId { get; set; }
-
-        public DateTime? LikedAt { get; set; }
-
-        // Optional: Tùy bạn có muốn include thông tin user/sound hay không
     }
 }
