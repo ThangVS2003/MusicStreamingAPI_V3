@@ -12,19 +12,21 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-<<<<<<< Updated upstream
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "MusicStreamingAPI", Version = "v1" });
-    // Thêm hỗ trợ JWT cho Swagger
+
+    // Thêm cấu hình cho Bearer Token
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
         Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Type = SecuritySchemeType.ApiKey,
-        Scheme = "Bearer"
+        Description = "Nhập token JWT theo định dạng: Bearer {token}"
     });
+
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
@@ -41,15 +43,6 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 builder.Services.AddDbContext<MusicStreamingDbContext>(opt => opt.UseSqlServer(builder.Configuration.GetConnectionString("MyDatabase")));
-=======
-builder.Services.AddSwaggerGen();
-builder.Services.AddDbContext<MusicStreamingDbContext>(opt =>
-    opt.UseSqlServer(
-        builder.Configuration.GetConnectionString("MyDatabase"),
-        sqlOptions => sqlOptions.EnableRetryOnFailure() // ✅ Thêm dòng này
-    )
-);
->>>>>>> Stashed changes
 
 // Thêm CORS
 builder.Services.AddCors(options =>
