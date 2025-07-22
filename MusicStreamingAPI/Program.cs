@@ -12,6 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
+<<<<<<< Updated upstream
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "MusicStreamingAPI", Version = "v1" });
@@ -40,6 +41,15 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 builder.Services.AddDbContext<MusicStreamingDbContext>(opt => opt.UseSqlServer(builder.Configuration.GetConnectionString("MyDatabase")));
+=======
+builder.Services.AddSwaggerGen();
+builder.Services.AddDbContext<MusicStreamingDbContext>(opt =>
+    opt.UseSqlServer(
+        builder.Configuration.GetConnectionString("MyDatabase"),
+        sqlOptions => sqlOptions.EnableRetryOnFailure() // ✅ Thêm dòng này
+    )
+);
+>>>>>>> Stashed changes
 
 // Thêm CORS
 builder.Services.AddCors(options =>
