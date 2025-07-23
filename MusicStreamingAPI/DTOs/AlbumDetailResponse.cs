@@ -11,6 +11,6 @@
         public int? TotalTracks { get; set; }
         public int? Duration { get; set; }
         public DateTime? CreatedAt { get; set; }
-        public List<SoundResponse> Tracks { get; set; } = new List<SoundResponse>();
+        public List<SoundResponse> Sounds { get; set; } = new List<SoundResponse>();
     }
 }
