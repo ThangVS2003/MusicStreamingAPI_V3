@@ -70,6 +70,50 @@ namespace MusicStreamingAPI.Controllers
             await _context.SaveChangesAsync();
             return Ok(new SoundDto(sound));
         }
+        [HttpGet("AllSounds")]
+        public async Task<ActionResult<IEnumerable<SoundAdminDto>>> GetAllSounds()
+        {
+            var sounds = await _context.Sounds
+                .Include(s => s.UploadedByNavigation)
+                .Include(s => s.Album)
+                .Include(s => s.Category)
+                .Select(s => new SoundAdminDto(s))
+                .ToListAsync();
+
+            return Ok(sounds);
+        }
+        [HttpGet("by-username")]
+        public async Task<ActionResult<IEnumerable<SoundAdminDto>>> GetSoundsByUsername([FromQuery] string username)
+        {
+            var sounds = await _context.Sounds
+                .Include(s => s.UploadedByNavigation)
+                .Include(s => s.Album)
+                .Include(s => s.Category)
+                .Where(s => s.UploadedByNavigation.Username.ToLower().Contains(username.ToLower()))
+                .Select(s => new SoundAdminDto(s))
+                .ToListAsync();
+
+            return Ok(sounds);
+        }
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateSound(int id, [FromBody] UpdateSoundRequest request)
+        {
+            var sound = await _context.Sounds.FindAsync(id);
+            if (sound == null)
+                return NotFound();
+
+            sound.Title = request.SoundName ?? sound.Title;
+            sound.CategoryId = request.CategoryId ?? sound.CategoryId;
+            sound.AlbumId = request.AlbumId ?? sound.AlbumId;
+            sound.IsActive = request.IsActive ?? sound.IsActive;
+            sound.IsPublic = request.IsPublic ?? sound.IsPublic;
+
+            sound.CreatedAt = DateTime.Now;
+
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
     }
 
   
