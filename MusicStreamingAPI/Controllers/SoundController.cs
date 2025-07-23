@@ -82,20 +82,9 @@ namespace MusicStreamingAPI.Controllers
         [HttpPost("available-for-playlist")]
         public async Task<ActionResult<List<SoundResponseDto>>> GetAvailableSounds(GetAvailableSoundsRequestDto request)
         {
-            // Lấy UserId từ JWT token
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (!int.TryParse(userIdClaim, out int userId))
-            {
-                return Unauthorized(new
-                {
-                    Message = "Không thể xác thực người dùng",
-                    Claims = User.Claims.Select(c => new { c.Type, c.Value })
-                });
-            }
-
             // Kiểm tra playlist tồn tại và thuộc về user
             var playlist = await _context.Playlists
-                .Where(p => p.PlaylistId == request.PlaylistId && p.UserId == userId)
+                .Where(p => p.PlaylistId == request.PlaylistId && p.UserId == request.UserId)
                 .FirstOrDefaultAsync();
             if (playlist == null)
             {
