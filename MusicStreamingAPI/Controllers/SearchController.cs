@@ -32,7 +32,7 @@ namespace MusicStreamingAPI.Controllers
             if (string.IsNullOrEmpty(type) || type == "sound")
             {
                 results.Sounds = await _context.Sounds
-                    .Where(s => s.Title.Contains(query) || s.ArtistName.Contains(query) || (s.Lyrics != null && s.Lyrics.Contains(query)))
+                    .Where(s => s.Title.Contains(query) || s.ArtistName.Contains(query) || (s.Lyrics != null && s.Lyrics.Contains(query)) && s.IsActive == true)
                     .OrderByDescending(s => s.CreatedAt)
                     .Take(20)
                     .Select(s => new SoundDto(s))

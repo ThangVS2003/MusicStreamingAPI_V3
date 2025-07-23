@@ -130,7 +130,7 @@ namespace MusicStreamingAPI.Controllers
                     TotalTracks = album.TotalTracks,
                     Duration = album.Duration,
                     CreatedAt = album.CreatedAt,
-                    Tracks = album.Sounds.Select(s => new SoundResponse
+                    Sounds = album.Sounds.Select(s => new SoundResponse
                     {
                         SoundId = s.SoundId,
                         Title = s.Title,
