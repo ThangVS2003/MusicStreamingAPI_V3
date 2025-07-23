@@ -264,6 +264,19 @@ namespace MusicStreamingAPI.Controllers
             await _context.SaveChangesAsync();
             return Ok(new SoundDto(sound));
         }
+        [HttpGet("statistics")]
+        public async Task<ActionResult<StatisticsResponseDto>> GetStatistics()
+        {
+            var statistics = new StatisticsResponseDto
+            {
+                CategoryCount = await _context.Categories.CountAsync(),
+                SoundCount = await _context.Sounds.CountAsync(),
+                UserCount = await _context.Users.CountAsync(),
+                CommentCount = await _context.Comments.CountAsync()
+            };
+
+            return Ok(statistics);
+        }
     }
 
   
